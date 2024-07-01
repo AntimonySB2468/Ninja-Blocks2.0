@@ -1,76 +1,91 @@
-//The global variables
-  var backgroundPNG, playerPNG, stonePNG, floorPNG;
-  var player, floor;
-  var blockGroup
-  var gameState = "play";
-  var score = 0
-   
+// module aliases
+var Engine = Matter.Engine,
+    Runner = Matter.Runner,
+    Bodies = Matter.Bodies,
+    Composite = Matter.Composite,
+    Body = Matter.Body,
+    Vector = Matter.Vector,
+    Collision = Matter.Collision;
 
-function preload(){
-  //preload the images
-    backgroundPNG = loadImage("sprites/background.png");
-    stonePNG = loadImage("sprites/stone.png")
-}
+var engine;
+var world;
+var runner;
+
+// sprites
+var ninja;
+var ground;
+var leftWall;
+var rightWall;
+var ceiling;
+
+
 
 function setup(){
-  //creates a canvas with the same size as the screen
-    createCanvas(displayWidth, displayHeight-112);
+    createCanvas(800, 800);
+    engine = Engine.create();
+    world = engine.world;
+    runner = Runner.create();
+
+    ground = new Ground(width/2, height, width, 10, 127);
+    ceiling = new Ground(width/2, 0, width, 10, 127);
+    leftWall = new Ground(0, height/2, 10, height, 127);
+    rightWall = new Ground(width, height/2, 10, height, 127);
+
     
-  //the player sprite
-    player = new Player()
 
-  //the dispenser that creates blocks
-    blockGroup = new Group();
+    ninja = new Rectangle(width/2, 100, 50, 50, 127);
 
-  //the ground sprite
-    ground = new Ground()
+    
+
+    Composite.add(world, ground);
+    Runner.run(runner, engine);
 }
 
 function draw(){
-  //the background so that it doesn't look weird
-    background(0);
-    image(backgroundPNG, 0, 0, displayWidth, displayHeight);
-
-  console.log(displayHeight-112)
-
-    if(gameState === "play"){
-      
-      //gives the player the x and y coordinates of the mouse
-        player.display();
-
-      //creates stone blocks from the sky
-        createBlock();
-      
-      //makes you lose the game (refer js/ground.js)
-        ground.isTouching(blockGroup);
-
-      //increases points (refer js/player.js)
-        player.isTouching(blockGroup);
-
-    } else if(gameState === "end"){
-      //stops the blocks from falling through the ground
-        blockGroup.setVelocityYEach(0);
-    }
-   
-    drawSprites();
+    background(51);    
     
-  //creates the score on the top
-    textSize(50)
-    stroke("white")
-    fill("white")
-    text("Score: " + score, 50, 50);
-}
-
-//block mama
-  function createBlock(){
-    var interval = 60 - score
-    var y = (displayHeight-112)%5
-    if (frameCount % interval === 0) {
-      var block = createSprite(600,y,40,10);
-      block.x = Math.round(random(10,displayWidth - 100));
-      block.addImage(stonePNG);
-      block.scale = 0.25;
-      block.velocityY = 20 + score;
-      blockGroup.add(block);
+    if (keyIsDown(65)){
+        Body.setVelocity(ninja.body, {x: -5, y: ninja.body.velocity.y});
     }
-  }
+    if (keyIsDown(68)){
+        Body.setVelocity(ninja.body, {x: 5, y: ninja.body.velocity.y});
+    }
+
+    
+    if (keyIsDown(87) === true){
+        if (Collision.collides(ninja.body, ground.body) != null){
+
+            if (Collision.collides(ninja.body, ground.body).collided){
+
+                Body.setVelocity(ninja.body, {x: ninja.body.velocity.x, y: -10});
+                
+            }
+        }
+        
+        if (Collision.collides(ninja.body, leftWall.body) != null){
+
+            if (Collision.collides(ninja.body, leftWall.body).collided){
+
+                Body.setVelocity(ninja.body, {x: ninja.body.velocity.x, y: -10});
+                
+            }
+        }
+
+        if (Collision.collides(ninja.body, rightWall.body) != null){
+
+            if (Collision.collides(ninja.body, rightWall.body).collided){
+
+                Body.setVelocity(ninja.body, {x: ninja.body.velocity.x, y: -10});
+                
+            }
+        }
+        
+        
+    }
+
+    rightWall.show();
+    leftWall.show();
+    ground.show();
+    ceiling.show();
+    ninja.show();
+}
