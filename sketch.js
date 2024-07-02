@@ -18,10 +18,13 @@ var leftWall;
 var rightWall;
 var ceiling;
 
+var score = 0;
+var blocks = [];
 
 
 function setup(){
-    createCanvas(800, 800);
+    createCanvas(400, 400);
+    
     engine = Engine.create();
     world = engine.world;
     runner = Runner.create();
@@ -31,18 +34,35 @@ function setup(){
     leftWall = new Ground(0, height/2, 10, height, 127);
     rightWall = new Ground(width, height/2, 10, height, 127);
 
-    
-
-    ninja = new Rectangle(width/2, 100, 50, 50, 127);
-
-    
+    ninja = new Rectangle(width/2, 100, 25, 25, 127);
 
     Composite.add(world, ground);
     Runner.run(runner, engine);
 }
 
+function createBlocks(difficulty){
+    var pos = Math.floor(Math.random()*1000);
+    var place;
+    
+    if (Math.random() > difficulty){
+        place = true
+    }
+    if (pos < 390 && pos > 10 && place){
+        blocks.push(new Rectangle(pos, 10, 50, 50, 255));
+    }
+
+    
+}
+
+
 function draw(){
     background(51);    
+
+    textSize(20);
+    fill(255);
+    stroke(0);
+    strokeWeight(4);
+    text("Score: " + score, 300, 50);
     
     if (keyIsDown(65)){
         Body.setVelocity(ninja.body, {x: -5, y: ninja.body.velocity.y});
@@ -53,39 +73,25 @@ function draw(){
 
     
     if (keyIsDown(87) === true){
-        if (Collision.collides(ninja.body, ground.body) != null){
-
-            if (Collision.collides(ninja.body, ground.body).collided){
-
-                Body.setVelocity(ninja.body, {x: ninja.body.velocity.x, y: -10});
-                
-            }
+        if (ninja.isTouching(ground.body) || ninja.isTouching(leftWall.body) || ninja.isTouching(rightWall.body)){
+            Body.setVelocity(ninja.body, {x: ninja.body.velocity.x, y: -10});
         }
-        
-        if (Collision.collides(ninja.body, leftWall.body) != null){
-
-            if (Collision.collides(ninja.body, leftWall.body).collided){
-
-                Body.setVelocity(ninja.body, {x: ninja.body.velocity.x, y: -10});
-                
-            }
-        }
-
-        if (Collision.collides(ninja.body, rightWall.body) != null){
-
-            if (Collision.collides(ninja.body, rightWall.body).collided){
-
-                Body.setVelocity(ninja.body, {x: ninja.body.velocity.x, y: -10});
-                
-            }
-        }
-        
-        
     }
+    createBlocks(0.95);
 
     rightWall.show();
     leftWall.show();
     ground.show();
     ceiling.show();
     ninja.show();
+    
+    for (var i = 0; i < blocks.length; i++){
+        block = blocks[i]
+        block.show();
+        if (ninja.isTouching(block.body)){
+            block.remove();
+            blocks.splice(i, 1);
+            score++;
+        } 
+    }
 }

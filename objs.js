@@ -27,22 +27,42 @@ function Rectangle(x, y, w, h, c){
     this.h = h;
     this.x = x;
     this.y = y;
+    this.removed = false;
     Composite.add(world, this.body);
 
     this.show = function(){
-        var pos = this.body.position;
-        var angle = this.body.angle;
-        push();
-        translate(pos.x, pos.y);
-        rotate(angle);
-        rectMode(CENTER);
+        if (!this.removed){
+            var pos = this.body.position;
+            var angle = this.body.angle;
+            push();
+            translate(pos.x, pos.y);
+            rotate(angle);
+            rectMode(CENTER);
 
-        strokeWeight(1);
-        stroke(255);
-        fill(c)
+            strokeWeight(1);
+            stroke(255);
+            fill(c)
 
-        rect(0, 0, this.w, this.h);
-        pop();
+            rect(0, 0, this.w, this.h);
+            pop();
+        }
+    }
+
+    this.isTouching = function(body){
+        if (!this.removed){
+            if (Collision.collides(this.body, body) != null){
+                if (Collision.collides(this.body, body).collided){
+                    return true;
+                }
+            }
+        } else {
+            return false;
+        }
+    }
+
+    this.remove = function(){
+        Composite.remove(world, this.body);
+        this.removed = true;
     }
 
 }
@@ -106,7 +126,10 @@ function Ground(x, y, w, h, c){
         stroke(255);
         fill(c)
 
+       
+
         rect(0, 0, this.w, this.h);
         pop();
+        
     }
 }
